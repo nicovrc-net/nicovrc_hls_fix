@@ -138,6 +138,8 @@ public class HTTPServer extends Thread {
         Process process = pb.start();
         process.waitFor();
 
+        System.out.println(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
+
         if (httpVersion == null || httpVersion.equals("1.1")) {
             bytes = ("HTTP/1.1 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/" + s + "/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
         } else if (httpVersion.equals("2.0")) {
