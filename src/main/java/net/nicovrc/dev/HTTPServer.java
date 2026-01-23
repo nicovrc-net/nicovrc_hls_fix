@@ -137,9 +137,15 @@ public class HTTPServer extends Thread {
         System.out.println("ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename \"/hls/"+s+"/%3d.ts\" /hls/"+s+"/main.m3u8");
         ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
         Process process = pb.start();
-        process.waitFor();
+        //process.waitFor();
 
         System.out.println("debug");
+
+        long a = 0;
+        while (!new File("/hls/"+s+"/main.m3u8").exists()){
+            a++;
+        }
+
         //System.out.println(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
 
         if (httpVersion == null || httpVersion.equals("1.1")) {
