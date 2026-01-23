@@ -134,6 +134,7 @@ public class HTTPServer extends Thread {
             file.mkdir();
         }
 
+        System.out.println("ffmpeg -i \"https://nicovrc.net" + uri + "\" -c:v copy -c:a copy -f hls -hls_list_size 0 /hls/" + s + "/main.m3u8");
         ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i \"https://nicovrc.net" + uri + "\" -c:v copy -c:a copy -f hls -hls_list_size 0 /hls/" + s + "/main.m3u8");
         Process process = pb.start();
         process.waitFor();
