@@ -148,16 +148,6 @@ public class HTTPServer extends Thread {
             bytes = ("HTTP/1.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/" + s + "/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
         }
 
-        Thread.ofVirtual().start(()->{
-            try {
-                Thread.sleep(86400000L);
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-
-
-        });
-
         return bytes;
     }
 }
