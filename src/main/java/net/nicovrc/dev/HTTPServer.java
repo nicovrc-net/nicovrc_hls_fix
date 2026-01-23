@@ -1,8 +1,6 @@
 package net.nicovrc.dev;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
@@ -137,14 +135,17 @@ public class HTTPServer extends Thread {
         System.out.println("ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename \"/hls/"+s+"/%3d.ts\" /hls/"+s+"/main.m3u8");
         ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
         Process process = pb.start();
-        //process.waitFor();
+        Thread.ofVirtual().start(()->{
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))){
+                String l;
+                while ((l = r.readLine()) != null) System.out.println(l);
+            } catch (Exception e){
+                //e.printStackTrace();
+            }
+        });
+        process.waitFor();
 
         System.out.println("debug");
-
-        long a = 0;
-        while (!new File("/hls/"+s+"/main.m3u8").exists()){
-            a++;
-        }
 
         //System.out.println(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
 
