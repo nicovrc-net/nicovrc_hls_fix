@@ -5,7 +5,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
 
@@ -47,31 +53,37 @@ public class HTTPServer extends Thread {
                         String uri = Function.getURI(httpRequest);
 
                         String httpVersion = Function.getHTTPVersion(httpRequest);
-                        String method = Function.getMethod(httpRequest);
                         byte[] bytes = null;
 
-                        if (uri.startsWith("/?url=htttps://www.nicovideo.jp/")) {
-                            String s = UUID.randomUUID() + "_" + new Date().getTime();
-                            File file = new File("/hls/" + s);
+                        if (uri.startsWith("/?url=https://www.nicovideo.jp/")) {
+                            out.write(hls_create(httpVersion));
+                        } else if (uri.startsWith("/?url=https://nico.ms")) {
 
-                            if (!file.exists()){
-                                file.mkdir();
-                            }
+                            String url = uri.replaceAll("^/\\?url=", "");
+                            HttpClient client = HttpClient.newBuilder()
+                                    .version(HttpClient.Version.HTTP_2)
+                                    .followRedirects(HttpClient.Redirect.NEVER)
+                                    .connectTimeout(Duration.ofSeconds(5))
+                                    .build();
 
-                            ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i \"https://nicovrc.net"+uri+"\" -c:v copy -c:a copy -f hls -hls_list_size 0 /hls/" + s + "/main.m3u8");
-                            Process process = pb.start();
-                            process.waitFor();
 
-                            if (httpVersion == null || httpVersion.equals("1.1")){
-                                bytes = ("HTTP/1.1 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                            } else if (httpVersion.equals("2.0")){
-                                bytes = ("HTTP/2.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                            } else {
-                                bytes = ("HTTP/1.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                            }
+                            HttpRequest request = HttpRequest.newBuilder()
+                                    .uri(new URI(url))
+                                    .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0")
+                                    .GET()
+                                    .build();
 
-                            out.write(bytes);
+                            HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
+                            HttpHeaders headers = send.headers();
+                            headers.map().forEach((s,v)->{
+                                System.out.println("--- " + s + " ---");
+                                for (String str : v){
+                                    System.out.println(str);
+                                }
+                            });
 
+                            out.write(hls_create(httpVersion));
+                            client.close();
                         } else {
 
                             if (httpVersion == null || httpVersion.equals("1.1")){
@@ -105,5 +117,39 @@ public class HTTPServer extends Thread {
             // e.printStackTrace();
         }
 
+    }
+
+    public byte[] hls_create(String httpVersion) throws Exception{
+        byte[] bytes;
+        String s = UUID.randomUUID() + "_" + new Date().getTime();
+        File file = new File("/hls/" + s);
+
+        if (!file.exists()) {
+            file.mkdir();
+        }
+
+        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i \"https://nicovrc.net" + uri + "\" -c:v copy -c:a copy -f hls -hls_list_size 0 /hls/" + s + "/main.m3u8");
+        Process process = pb.start();
+        process.waitFor();
+
+        if (httpVersion == null || httpVersion.equals("1.1")) {
+            bytes = ("HTTP/1.1 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/" + s + "/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+        } else if (httpVersion.equals("2.0")) {
+            bytes = ("HTTP/2.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/" + s + "/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+        } else {
+            bytes = ("HTTP/1.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/" + s + "/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+        }
+
+        Thread.ofVirtual().start(()->{
+            try {
+                Thread.sleep(86400000L);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+        });
+
+        return bytes;
     }
 }
