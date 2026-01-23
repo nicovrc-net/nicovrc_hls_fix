@@ -133,7 +133,7 @@ public class HTTPServer extends Thread {
         }
 
         System.out.println("ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
-        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8", " > /dev/null");
+        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -v quiet -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8", " > /dev/null");
         Process process = pb.start();
 
         new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) System.out.println(l); } catch (IOException ignored) {} }).start();
