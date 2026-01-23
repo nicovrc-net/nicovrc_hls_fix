@@ -136,19 +136,43 @@ public class HTTPServer extends Thread {
         ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -v quiet -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8", " > /dev/null");
         Process process = pb.start();
 
-        new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) System.out.println(l); } catch (IOException ignored) {} }).start();
+        new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) l = l; } catch (IOException ignored) {} }).start();
         process.waitFor();
 
         //System.out.println("debug");
 
         //System.out.println(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
 
+        String hlsText = null;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("/hls/"+s+"/main.m3u8"), StandardCharsets.UTF_8))){
+            String str;
+            StringBuilder sb = new StringBuilder();
+            while ((str = reader.readLine()) != null) {
+                sb.append(str).append("\n");
+            }
+            hlsText = sb.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        StringBuilder hls_output = new StringBuilder();
+        for (String str : hlsText.split("\n")){
+            if (str.startsWith("#")){
+                hls_output.append(str).append("\n");
+                continue;
+            }
+
+            hls_output.append("\n/hls/").append(s).append("/").append(str).append("\n");
+        }
+
+        byte[] hls = hls_output.toString().getBytes(StandardCharsets.UTF_8);
+
         if (httpVersion == null || httpVersion.equals("1.1")) {
-            bytes = ("HTTP/1.1 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/" + s + "/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+            bytes = ("HTTP/1.1 200 OK\r\nContent-Length: "+hls.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + hls_output).getBytes(StandardCharsets.UTF_8);
         } else if (httpVersion.equals("2.0")) {
-            bytes = ("HTTP/2.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/" + s + "/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+            bytes = ("HTTP/2.0 200 OK\r\nContent-Length: "+hls.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + hls_output).getBytes(StandardCharsets.UTF_8);
         } else {
-            bytes = ("HTTP/1.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/" + s + "/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+            bytes = ("HTTP/1.0 200 OK\r\nContent-Length: "+hls.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + hls_output).getBytes(StandardCharsets.UTF_8);
         }
 
         return bytes;
