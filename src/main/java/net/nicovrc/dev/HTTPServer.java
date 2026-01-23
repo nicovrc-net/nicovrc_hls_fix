@@ -48,7 +48,7 @@ public class HTTPServer extends Thread {
                             return;
                         }
 
-                        String uri = Function.getURI(httpRequest);
+                        String uri = Function.getURI(httpRequest).replaceAll("/dummy\\.m3u8", "/");
 
                         String httpVersion = Function.getHTTPVersion(httpRequest);
                         byte[] bytes = null;
