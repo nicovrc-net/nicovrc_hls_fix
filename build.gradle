@@ -1,0 +1,33 @@
+plugins {
+    id "java"
+    id "com.gradleup.shadow" version "9.3.1"
+}
+
+group = "net.nicovrc.dev"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+
+    compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    manifest {
+        attributes 'Main-Class': 'net.nicovrc.dev.Main'
+    }
+}
