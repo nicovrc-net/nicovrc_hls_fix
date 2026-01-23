@@ -5,15 +5,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Date;
-import java.util.Timer;
 import java.util.UUID;
 
 public class HTTPServer extends Thread {
-    private final Timer timer = new Timer();
 
     public HTTPServer(){
 
@@ -31,12 +27,6 @@ public class HTTPServer extends Thread {
             isRun[0] = false;
             return;
         }
-
-        final HttpClient client = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(Duration.ofSeconds(5))
-                .build();
 
         while (isRun[0]){
             try {
@@ -134,7 +124,6 @@ public class HTTPServer extends Thread {
         }
 
         try {
-            client.close();
             svSock.close();
         } catch (Exception e){
             // e.printStackTrace();

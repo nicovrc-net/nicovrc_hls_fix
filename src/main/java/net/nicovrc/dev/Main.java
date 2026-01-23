@@ -7,6 +7,7 @@ public class Main {
 
         HTTPServer httpServer = new HTTPServer();
         try {
+            httpServer.start();
             httpServer.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
