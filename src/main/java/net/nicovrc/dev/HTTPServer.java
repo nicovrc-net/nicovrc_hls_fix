@@ -63,23 +63,11 @@ public class HTTPServer extends Thread {
                             process.waitFor();
 
                             if (httpVersion == null || httpVersion.equals("1.1")){
-                                if (method != null && method.equals("HEAD")){
-                                    bytes = ("HTTP/1.1 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                                } else {
-                                    bytes = ("HTTP/1.1 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\nredirecting...").getBytes(StandardCharsets.UTF_8);
-                                }
+                                bytes = ("HTTP/1.1 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
                             } else if (httpVersion.equals("2.0")){
-                                if (method != null && method.equals("HEAD")){
-                                    bytes = ("HTTP/2.0 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                                } else {
-                                    bytes = ("HTTP/2.0 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\nredirecting...").getBytes(StandardCharsets.UTF_8);
-                                }
+                                bytes = ("HTTP/2.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
                             } else {
-                                if (method != null && method.equals("HEAD")){
-                                    bytes = ("HTTP/1.0 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                                } else {
-                                    bytes = ("HTTP/1.0 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\nredirecting...").getBytes(StandardCharsets.UTF_8);
-                                }
+                                bytes = ("HTTP/1.0 302 Found\r\nLocation: https://chocolat.nicovrc.net/hls/"+s+"/main.m3u8\r\n\r\n").getBytes(StandardCharsets.UTF_8);
                             }
 
                             out.write(bytes);
@@ -87,23 +75,11 @@ public class HTTPServer extends Thread {
                         } else {
 
                             if (httpVersion == null || httpVersion.equals("1.1")){
-                                if (method != null && method.equals("HEAD")){
-                                    bytes = ("HTTP/1.1 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                                } else {
-                                    bytes = ("HTTP/1.1 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://nicovrc.net"+uri+"\r\n\r\nredirecting...").getBytes(StandardCharsets.UTF_8);
-                                }
+                                bytes = ("HTTP/1.1 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
                             } else if (httpVersion.equals("2.0")){
-                                if (method != null && method.equals("HEAD")){
-                                    bytes = ("HTTP/2.0 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                                } else {
-                                    bytes = ("HTTP/2.0 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://nicovrc.net"+uri+"\r\n\r\nredirecting...").getBytes(StandardCharsets.UTF_8);
-                                }
+                                bytes = ("HTTP/2.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
                             } else {
-                                if (method != null && method.equals("HEAD")){
-                                    bytes = ("HTTP/1.0 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                                } else {
-                                    bytes = ("HTTP/1.0 302 Found\r\nContent-Length: "+("redirecting...".getBytes(StandardCharsets.UTF_8).length)+"\r\nContent-Type: text/plain\r\nDate: "+new Date()+"Location: https://nicovrc.net"+uri+"\r\n\r\nredirecting...").getBytes(StandardCharsets.UTF_8);
-                                }
+                                bytes = ("HTTP/1.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
                             }
 
                             out.write(bytes);
