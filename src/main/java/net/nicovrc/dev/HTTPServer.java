@@ -55,37 +55,43 @@ public class HTTPServer extends Thread {
                         String httpVersion = Function.getHTTPVersion(httpRequest);
                         byte[] bytes = null;
 
-                        if (uri.startsWith("/?url=https://www.nicovideo.jp/")) {
-                            out.write(hls_create(httpVersion));
-                        } else if (uri.startsWith("/?url=https://nico.ms")) {
+                        if (uri.startsWith("/?url=https://www.nicovideo.jp/") || uri.startsWith("/?url=http://www.nicovideo.jp/")) {
+                            out.write(hls_create(httpVersion, uri));
+                        } else if (uri.startsWith("/?url=https://nico.ms") || uri.startsWith("/?url=http://nico.ms")) {
 
                             String url = uri.replaceAll("^/\\?url=", "");
-                            HttpClient client = HttpClient.newBuilder()
+                            try (HttpClient client = HttpClient.newBuilder()
                                     .version(HttpClient.Version.HTTP_2)
                                     .followRedirects(HttpClient.Redirect.NEVER)
                                     .connectTimeout(Duration.ofSeconds(5))
-                                    .build();
+                                    .build()){
 
+                                HttpRequest request = HttpRequest.newBuilder()
+                                        .uri(new URI(url))
+                                        .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0")
+                                        .GET()
+                                        .build();
 
-                            HttpRequest request = HttpRequest.newBuilder()
-                                    .uri(new URI(url))
-                                    .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0")
-                                    .GET()
-                                    .build();
+                                HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
+                                HttpHeaders headers = send.headers();
+                                String s = headers.firstValue("location").get();
 
-                            HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
-                            HttpHeaders headers = send.headers();
-                            headers.map().forEach((s,v)->{
-                                System.out.println("--- " + s + " ---");
-                                for (String str : v){
-                                    System.out.println(str);
+                                if (s.startsWith("https://www.nicovideo.jp/")){
+                                    out.write(hls_create(httpVersion, uri));
+                                } else {
+                                    if (httpVersion == null || httpVersion.equals("1.1")){
+                                        bytes = ("HTTP/1.1 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+                                    } else if (httpVersion.equals("2.0")){
+                                        bytes = ("HTTP/2.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+                                    } else {
+                                        bytes = ("HTTP/1.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+                                    }
+
+                                    out.write(bytes);
                                 }
-                            });
 
-                            out.write(hls_create(httpVersion));
-                            client.close();
+                            }
                         } else {
-
                             if (httpVersion == null || httpVersion.equals("1.1")){
                                 bytes = ("HTTP/1.1 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
                             } else if (httpVersion.equals("2.0")){
@@ -119,7 +125,7 @@ public class HTTPServer extends Thread {
 
     }
 
-    public byte[] hls_create(String httpVersion) throws Exception{
+    public byte[] hls_create(String httpVersion, String uri) throws Exception{
         byte[] bytes;
         String s = UUID.randomUUID() + "_" + new Date().getTime();
         File file = new File("/hls/" + s);
