@@ -138,6 +138,7 @@ public class HTTPServer extends Thread {
         Process process = pb.start();
         process.waitFor();
 
+        System.out.println("debug");
         //System.out.println(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
 
         if (httpVersion == null || httpVersion.equals("1.1")) {
