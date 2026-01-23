@@ -5,7 +5,12 @@ package net.nicovrc.dev;
 public class Main {
     public static void main(String[] args) {
 
-
+        HTTPServer httpServer = new HTTPServer();
+        try {
+            httpServer.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 }
