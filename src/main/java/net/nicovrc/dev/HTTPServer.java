@@ -12,8 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HTTPServer extends Thread {
+
+    private final Pattern match_ua = Pattern.compile("LibVLC");
 
     public HTTPServer(){
 
@@ -51,10 +55,16 @@ public class HTTPServer extends Thread {
                         String uri = Function.getURI(httpRequest).replaceAll("/dummy\\.m3u8", "/");
 
                         String httpVersion = Function.getHTTPVersion(httpRequest);
-                        byte[] bytes = null;
+                        Matcher matcher = match_ua.matcher(httpRequest);
 
                         if (uri.startsWith("/?url=https://www.nicovideo.jp/") || uri.startsWith("/?url=http://www.nicovideo.jp/")) {
-                            out.write(hls_create(httpVersion, uri));
+
+                            if (matcher.find()){
+                                out.write(hls_create(httpVersion, uri));
+                            } else {
+                                out.write(redirect(httpVersion, uri));
+                            }
+
                         } else if (uri.startsWith("/?url=https://nico.ms") || uri.startsWith("/?url=http://nico.ms")) {
 
                             String url = uri.replaceAll("^/\\?url=", "");
@@ -75,31 +85,18 @@ public class HTTPServer extends Thread {
                                 String s = headers.firstValue("location").get();
 
                                 if (s.startsWith("https://www.nicovideo.jp/")){
-                                    out.write(hls_create(httpVersion, uri));
-                                } else {
-                                    if (httpVersion == null || httpVersion.equals("1.1")){
-                                        bytes = ("HTTP/1.1 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                                    } else if (httpVersion.equals("2.0")){
-                                        bytes = ("HTTP/2.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+                                    if (matcher.find()){
+                                        out.write(hls_create(httpVersion, uri));
                                     } else {
-                                        bytes = ("HTTP/1.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+                                        out.write(redirect(httpVersion, uri));
                                     }
-
-                                    out.write(bytes);
+                                } else {
+                                    out.write(redirect(httpVersion, uri));
                                 }
 
                             }
                         } else {
-                            if (httpVersion == null || httpVersion.equals("1.1")){
-                                bytes = ("HTTP/1.1 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                            } else if (httpVersion.equals("2.0")){
-                                bytes = ("HTTP/2.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                            } else {
-                                bytes = ("HTTP/1.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
-                            }
-
-                            out.write(bytes);
-
+                            out.write(redirect(httpVersion, uri));
                         }
 
                         in.close();
@@ -133,7 +130,7 @@ public class HTTPServer extends Thread {
         }
 
         //System.out.println("ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
-        ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i","https://yobi.nicovrc.net" + uri,"-c:v","copy","-c:a","copy","-f","hls","-hls_list_size","0","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
+        ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i","https://yobi.nicovrc.net" + uri,"-c:v","copy","-c:a","copy","-f","hls","-hls_playlist_type","vod","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
         Process process = pb.start();
 
         //new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) l = l; } catch (IOException ignored) {} }).start();
@@ -180,5 +177,15 @@ public class HTTPServer extends Thread {
         }
 
         return bytes;
+    }
+
+    public byte[] redirect(String httpVersion, String uri){
+        if (httpVersion == null || httpVersion.equals("1.1")){
+            bytes = ("HTTP/1.1 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+        } else if (httpVersion.equals("2.0")){
+            bytes = ("HTTP/2.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+        } else {
+            bytes = ("HTTP/1.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+        }
     }
 }
