@@ -180,6 +180,9 @@ public class HTTPServer extends Thread {
     }
 
     public byte[] redirect(String httpVersion, String uri){
+
+        byte[] bytes = null;
+
         if (httpVersion == null || httpVersion.equals("1.1")){
             bytes = ("HTTP/1.1 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
         } else if (httpVersion.equals("2.0")){
@@ -187,5 +190,8 @@ public class HTTPServer extends Thread {
         } else {
             bytes = ("HTTP/1.0 302 Found\r\nLocation: https://nicovrc.net"+uri+"\r\n\r\n").getBytes(StandardCharsets.UTF_8);
         }
+
+        return bytes;
+
     }
 }
