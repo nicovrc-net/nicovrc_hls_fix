@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class HTTPServer extends Thread {
 
-    private final Pattern match_ua = Pattern.compile("LibVLC");
+    private final Pattern match_ua = Pattern.compile("(LibVLC|GStreamer)");
 
     public HTTPServer(){
 
