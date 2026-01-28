@@ -63,11 +63,7 @@ public class HTTPServer extends Thread {
 
                         if (uri.startsWith("/?url=https://www.nicovideo.jp/") || uri.startsWith("/?url=http://www.nicovideo.jp/")) {
 
-                            if (matcher1.find() && matcher2.find()){
-                                out.write(redirect(httpVersion, uri));
-                            } else {
-                                out.write(hls_dummy_create(httpVersion, uri));
-                            }
+                            out.write(hls_dummy_create(httpVersion, uri));
 
                         } else if (uri.startsWith("/?url=https://nico.ms") || uri.startsWith("/?url=http://nico.ms")) {
 
@@ -89,11 +85,7 @@ public class HTTPServer extends Thread {
                                 String s = headers.firstValue("location").get();
 
                                 if (s.startsWith("https://www.nicovideo.jp/")) {
-                                    if (matcher1.find() && matcher2.find()) {
-                                        out.write(redirect(httpVersion, uri));
-                                    } else {
-                                        out.write(hls_dummy_create(httpVersion, uri));
-                                    }
+                                    out.write(hls_dummy_create(httpVersion, uri));
                                 } else {
                                     out.write(redirect(httpVersion, uri));
                                 }
