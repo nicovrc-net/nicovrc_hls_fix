@@ -17,7 +17,10 @@ import java.util.regex.Pattern;
 
 public class HTTPServer extends Thread {
 
-    private final Pattern match_ua = Pattern.compile("LibVLC");
+    private final Pattern match_ua = Pattern.compile("Chrome/");
+    private final Pattern match_chrome = Pattern.compile("(S|s)ec-(c|C)h-(u|U)a");
+
+    private final String nicovrc_host = "yobi.nicovrc.net";
 
     public HTTPServer(){
 
@@ -55,14 +58,15 @@ public class HTTPServer extends Thread {
                         String uri = Function.getURI(httpRequest).replaceAll("/dummy\\.m3u8", "/");
 
                         String httpVersion = Function.getHTTPVersion(httpRequest);
-                        Matcher matcher = match_ua.matcher(httpRequest);
+                        Matcher matcher1 = match_ua.matcher(httpRequest);
+                        Matcher matcher2 = match_chrome.matcher(httpRequest);
 
                         if (uri.startsWith("/?url=https://www.nicovideo.jp/") || uri.startsWith("/?url=http://www.nicovideo.jp/")) {
 
-                            if (matcher.find()){
-                                out.write(hls_create(httpVersion, uri));
-                            } else {
+                            if (matcher1.find() && matcher2.find()){
                                 out.write(redirect(httpVersion, uri));
+                            } else {
+                                out.write(hls_dummy_create(httpVersion, uri));
                             }
 
                         } else if (uri.startsWith("/?url=https://nico.ms") || uri.startsWith("/?url=http://nico.ms")) {
@@ -72,7 +76,7 @@ public class HTTPServer extends Thread {
                                     .version(HttpClient.Version.HTTP_2)
                                     .followRedirects(HttpClient.Redirect.NEVER)
                                     .connectTimeout(Duration.ofSeconds(5))
-                                    .build()){
+                                    .build()) {
 
                                 HttpRequest request = HttpRequest.newBuilder()
                                         .uri(new URI(url))
@@ -84,17 +88,21 @@ public class HTTPServer extends Thread {
                                 HttpHeaders headers = send.headers();
                                 String s = headers.firstValue("location").get();
 
-                                if (s.startsWith("https://www.nicovideo.jp/")){
-                                    if (matcher.find()){
-                                        out.write(hls_create(httpVersion, uri));
-                                    } else {
+                                if (s.startsWith("https://www.nicovideo.jp/")) {
+                                    if (matcher1.find() && matcher2.find()) {
                                         out.write(redirect(httpVersion, uri));
+                                    } else {
+                                        out.write(hls_dummy_create(httpVersion, uri));
                                     }
                                 } else {
                                     out.write(redirect(httpVersion, uri));
                                 }
 
                             }
+                        } else if (uri.startsWith("/hls_create.m3u8")) {
+
+                            out.write(hls_create(httpVersion, uri));
+
                         } else {
                             out.write(redirect(httpVersion, uri));
                         }
@@ -120,6 +128,57 @@ public class HTTPServer extends Thread {
 
     }
 
+    public byte[] hls_dummy_create(String httpVersion, String uri) throws Exception {
+        byte[] bytes;
+        StringBuilder header = new StringBuilder();
+        StringBuilder m3u8_dummy = new StringBuilder();
+
+        try (HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .followRedirects(HttpClient.Redirect.NEVER)
+                .connectTimeout(Duration.ofSeconds(5))
+                .build()){
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("https://"+nicovrc_host+uri+"?hlsfix"))
+                    .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0 HLSFix/1.0")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            String m3u8 = send.body();
+            for (String str : m3u8.split("\n")){
+
+                if (!str.startsWith("/dummy.m3u8?url=")){
+                    m3u8_dummy.append(str).append("\n");
+                    continue;
+                }
+
+                m3u8_dummy.append("/hls_create.m3u8").append(uri);
+
+            }
+
+            bytes = m3u8_dummy.toString().getBytes(StandardCharsets.UTF_8);
+
+        }
+
+        if (httpVersion == null || httpVersion.equals("1.1")) {
+            header.append("HTTP/1.1 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
+            bytes = header.toString().getBytes(StandardCharsets.UTF_8);
+
+        } else if (httpVersion.equals("2.0")) {
+            header.append("HTTP/2.0 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
+            bytes = header.toString().getBytes(StandardCharsets.UTF_8);
+        } else {
+            header.append("HTTP/1.0 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
+            bytes = header.toString().getBytes(StandardCharsets.UTF_8);
+        }
+
+
+        return bytes;
+    }
+
     public byte[] hls_create(String httpVersion, String uri) throws Exception{
         byte[] bytes;
         String s = UUID.randomUUID() + "_" + new Date().getTime();
@@ -130,7 +189,7 @@ public class HTTPServer extends Thread {
         }
 
         //System.out.println("ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
-        ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i","https://yobi.nicovrc.net" + uri,"-c:v","copy","-c:a","copy","-f","hls","-hls_playlist_type","vod","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
+        ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i","https://" + nicovrc_host + uri.replaceAll("hls_create\\.m3u8", ""),"-c:v","copy","-c:a","copy","-f","hls","-hls_playlist_type","vod","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
         Process process = pb.start();
 
         //new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) l = l; } catch (IOException ignored) {} }).start();
