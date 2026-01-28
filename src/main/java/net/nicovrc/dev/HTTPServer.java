@@ -12,13 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class HTTPServer extends Thread {
-
-    private final Pattern match_ua = Pattern.compile("Chrome/");
-    private final Pattern match_chrome = Pattern.compile("(S|s)ec-(c|C)h-(u|U)a");
 
     private final String nicovrc_host = "yobi.nicovrc.net";
 
