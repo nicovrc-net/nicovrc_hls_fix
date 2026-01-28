@@ -139,7 +139,7 @@ public class HTTPServer extends Thread {
                     continue;
                 }
 
-                m3u8_dummy.append("/hls_create.m3u8").append(uri);
+                m3u8_dummy.append("/hls_create.m3u8").append(uri.replaceAll("^/", ""));
 
             }
 
