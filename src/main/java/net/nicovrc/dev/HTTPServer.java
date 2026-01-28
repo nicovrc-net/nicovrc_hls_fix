@@ -32,7 +32,7 @@ public class HTTPServer extends Thread {
         boolean[] isRun = {true};
         ServerSocket svSock = null;
         try {
-            svSock = new ServerSocket(8881);
+            svSock = new ServerSocket(8882);
         } catch (Exception e){
             e.printStackTrace();
             isRun[0] = false;
@@ -58,9 +58,6 @@ public class HTTPServer extends Thread {
                         String uri = Function.getURI(httpRequest).replaceAll("/dummy\\.m3u8", "/");
 
                         String httpVersion = Function.getHTTPVersion(httpRequest);
-                        Matcher matcher1 = match_ua.matcher(httpRequest);
-                        Matcher matcher2 = match_chrome.matcher(httpRequest);
-
                         if (uri.startsWith("/?url=https://www.nicovideo.jp/") || uri.startsWith("/?url=http://www.nicovideo.jp/")) {
 
                             out.write(hls_dummy_create(httpVersion, uri));
