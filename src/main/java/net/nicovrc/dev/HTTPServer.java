@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class HTTPServer extends Thread {
 
-    private final String nicovrc_host = "yobi.nicovrc.net";
+    private final String nicovrc_host = "nicovrc.net";
     private final Pattern match_ua = Pattern.compile("LibVLC");
 
     public HTTPServer(){
