@@ -12,8 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class HTTPServer extends Thread {
 
@@ -126,7 +124,7 @@ public class HTTPServer extends Thread {
                 .build()){
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("https://"+nicovrc_host+uri+"?hlsfix"))
+                    .uri(new URI(nicovrc_baseurl+uri+"?hlsfix"))
                     .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0 HLSFix/1.0")
                     .GET()
                     .build();
