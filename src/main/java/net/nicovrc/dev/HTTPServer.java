@@ -12,10 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HTTPServer extends Thread {
 
-    private final String nicovrc_host = "yobi.nicovrc.net";
+    private final String nicovrc_baseurl = "http://localhost:25252";
 
     public HTTPServer(){
 
@@ -173,7 +175,7 @@ public class HTTPServer extends Thread {
         }
 
         //System.out.println("ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
-        ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i","https://" + nicovrc_host + uri.replaceAll("hls_create\\.m3u8", ""),"-c:v","copy","-c:a","copy","-f","hls","-hls_playlist_type","vod","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
+        ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i",nicovrc_baseurl + uri,"-c:v","copy","-c:a","copy","-f","hls","-hls_playlist_type","vod","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
         Process process = pb.start();
 
         //new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) l = l; } catch (IOException ignored) {} }).start();
