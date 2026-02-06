@@ -52,6 +52,8 @@ public class HTTPServer extends Thread {
                         }
 
                         String uri = Function.getURI(httpRequest).replaceAll("/dummy\\.m3u8", "/");
+                        String s = uri.replaceAll("/\\?url=", "");
+                        byte[] cacheValue = cacheList.get(s);
 
                         String httpVersion = Function.getHTTPVersion(httpRequest);
                         if (uri.startsWith("/?url=https://www.nicovideo.jp/") || uri.startsWith("/?url=http://www.nicovideo.jp/")) {
@@ -75,9 +77,9 @@ public class HTTPServer extends Thread {
 
                                 HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
                                 HttpHeaders headers = send.headers();
-                                String s = headers.firstValue("location").get();
+                                String location = headers.firstValue("location").get();
 
-                                if (s.startsWith("https://www.nicovideo.jp/")) {
+                                if (location.startsWith("https://www.nicovideo.jp/")) {
                                     out.write(hls_dummy_create(httpVersion, uri));
                                 } else {
                                     out.write(redirect(httpVersion, uri));
