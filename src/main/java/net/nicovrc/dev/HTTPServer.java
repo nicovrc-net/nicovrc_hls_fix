@@ -11,6 +11,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +19,7 @@ import java.util.regex.Pattern;
 public class HTTPServer extends Thread {
 
     private final String nicovrc_baseurl = "http://localhost:25252";
+    private final HashMap<String, byte[]> cacheList = new HashMap<>();
     private final Pattern match_ua = Pattern.compile("LibVLC");
 
     public HTTPServer(){
@@ -57,11 +59,32 @@ public class HTTPServer extends Thread {
 
                         String httpVersion = Function.getHTTPVersion(httpRequest);
                         Matcher matcher = match_ua.matcher(httpRequest);
+                        String s = uri.replaceAll("/\\?url=", "");
+                        byte[] cacheValue = cacheList.get(s);
 
                         if (uri.startsWith("/?url=https://www.nicovideo.jp/") || uri.startsWith("/?url=http://www.nicovideo.jp/")) {
 
                             if (matcher.find()){
-                                out.write(hls_create(httpVersion, uri));
+                                if (cacheValue == null){
+                                    cacheList.put(s, Function.zeroByte);
+                                    byte[] bytes = hls_create(httpVersion, uri);
+                                    out.write(bytes);
+                                    cacheList.remove(s);
+                                    cacheList.put(s, bytes);
+                                } else {
+                                    while (cacheList.get(s).length == 0){
+                                        Thread.sleep(100L);
+                                    }
+                                    cacheValue = cacheList.get(s);
+
+                                    if (httpVersion == null || httpVersion.equals("1.1")) {
+                                        out.write(("HTTP/1.1 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
+                                    } else if (httpVersion.equals("2.0")) {
+                                        out.write(("HTTP/2.0 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
+                                    } else {
+                                        out.write(("HTTP/1.0 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
+                                    }
+                                }
                             } else {
                                 out.write(redirect(httpVersion, uri));
                             }
@@ -83,11 +106,30 @@ public class HTTPServer extends Thread {
 
                                 HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
                                 HttpHeaders headers = send.headers();
-                                String s = headers.firstValue("location").get();
+                                final String location = headers.firstValue("location").isPresent() ? headers.firstValue("location").get() : "";
 
-                                if (s.startsWith("https://www.nicovideo.jp/")){
+                                if (location.startsWith("https://www.nicovideo.jp/")){
                                     if (matcher.find()){
-                                        out.write(hls_create(httpVersion, uri));
+                                        if (cacheValue == null){
+                                            cacheList.put(s, Function.zeroByte);
+                                            byte[] bytes = hls_create(httpVersion, uri);
+                                            out.write(bytes);
+                                            cacheList.remove(s);
+                                            cacheList.put(s, bytes);
+                                        } else {
+                                            while (cacheList.get(s).length == 0){
+                                                Thread.sleep(100L);
+                                            }
+                                            cacheValue = cacheList.get(s);
+
+                                            if (httpVersion == null || httpVersion.equals("1.1")) {
+                                                out.write(("HTTP/1.1 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
+                                            } else if (httpVersion.equals("2.0")) {
+                                                out.write(("HTTP/2.0 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
+                                            } else {
+                                                out.write(("HTTP/1.0 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
+                                            }
+                                        }
                                     } else {
                                         out.write(redirect(httpVersion, uri));
                                     }
@@ -121,7 +163,8 @@ public class HTTPServer extends Thread {
 
     }
 
-    public byte[] hls_create(String httpVersion, String uri) throws Exception{
+    public byte[] hls_create(String httpVersion, String uri) throws Exception {
+
         byte[] bytes;
         String s = UUID.randomUUID() + "_" + new Date().getTime();
         File file = new File("/hls/" + s);
