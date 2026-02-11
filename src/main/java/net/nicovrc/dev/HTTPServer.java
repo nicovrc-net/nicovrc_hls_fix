@@ -76,14 +76,7 @@ public class HTTPServer extends Thread {
                                         Thread.sleep(100L);
                                     }
                                     cacheValue = cacheList.get(s);
-
-                                    if (httpVersion == null || httpVersion.equals("1.1")) {
-                                        out.write(("HTTP/1.1 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
-                                    } else if (httpVersion.equals("2.0")) {
-                                        out.write(("HTTP/2.0 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
-                                    } else {
-                                        out.write(("HTTP/1.0 200 OK\r\nContent-Length: "+cacheValue.length+"\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: "+(new Date())+"\r\n\r\n" + new String(cacheValue, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
-                                    }
+                                    out.write(cacheValue);
                                 }
                             } else {
                                 out.write(redirect(httpVersion, uri));
