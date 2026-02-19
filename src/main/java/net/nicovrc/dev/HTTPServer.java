@@ -52,7 +52,7 @@ public class HTTPServer extends Thread {
                             return;
                         }
 
-                        System.out.println(httpRequest);
+                        //System.out.println(httpRequest);
 
                         String uri = Function.getURI(httpRequest).replaceAll("/dummy\\.m3u8", "/");
                         String s = uri.replaceAll("/\\?url=", "");
@@ -61,7 +61,7 @@ public class HTTPServer extends Thread {
                         String httpVersion = Function.getHTTPVersion(httpRequest);
                         if (uri.startsWith("/?url=https://www.nicovideo.jp/") || uri.startsWith("/?url=http://www.nicovideo.jp/")) {
 
-                            System.out.println(new String(hls_dummy_create(httpVersion, uri), StandardCharsets.UTF_8));
+                            //System.out.println(new String(hls_dummy_create(httpVersion, uri), StandardCharsets.UTF_8));
                             out.write(hls_dummy_create(httpVersion, uri));
 
                         } else if (uri.startsWith("/?url=https://nico.ms") || uri.startsWith("/?url=http://nico.ms")) {
@@ -84,7 +84,7 @@ public class HTTPServer extends Thread {
                                 String location = headers.firstValue("location").get();
 
                                 if (location.startsWith("https://www.nicovideo.jp/")) {
-                                    System.out.println(new String(hls_dummy_create(httpVersion, uri), StandardCharsets.UTF_8));
+                                    //System.out.println(new String(hls_dummy_create(httpVersion, uri), StandardCharsets.UTF_8));
                                     out.write(hls_dummy_create(httpVersion, uri));
                                 } else {
                                     out.write(redirect(httpVersion, uri));
