@@ -84,6 +84,7 @@ public class HTTPServer extends Thread {
                                 String location = headers.firstValue("location").get();
 
                                 if (location.startsWith("https://www.nicovideo.jp/")) {
+                                    System.out.println(new String(hls_dummy_create(httpVersion, uri), StandardCharsets.UTF_8));
                                     out.write(hls_dummy_create(httpVersion, uri));
                                 } else {
                                     out.write(redirect(httpVersion, uri));
