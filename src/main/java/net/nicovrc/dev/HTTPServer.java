@@ -136,6 +136,7 @@ public class HTTPServer extends Thread {
         StringBuilder header = new StringBuilder();
         StringBuilder m3u8_dummy = new StringBuilder();
 
+        String c_type = "";
         try (HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .followRedirects(HttpClient.Redirect.NEVER)
@@ -148,33 +149,39 @@ public class HTTPServer extends Thread {
                     .GET()
                     .build();
 
-            HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<byte[]> send = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
 
-            String m3u8 = send.body();
-            for (String str : m3u8.split("\n")){
+            if (send.headers().firstValue("Content-Type").isPresent() && send.headers().firstValue("Content-Type").get().equals("application/vnd.apple.mpegurl")){
+                String m3u8 = new String(send.body()., StandardCharsets.UTF_8);
+                c_type = send.headers().firstValue("Content-Type").get();
+                for (String str : m3u8.split("\n")){
 
-                if (!str.startsWith("/dummy.m3u8?url=")){
-                    m3u8_dummy.append(str).append("\n");
-                    continue;
+                    if (!str.startsWith("/dummy.m3u8?url=")){
+                        m3u8_dummy.append(str).append("\n");
+                        continue;
+                    }
+
+                    m3u8_dummy.append("/hls_create.m3u8").append(uri.replaceAll("^/", ""));
+
                 }
 
-                m3u8_dummy.append("/hls_create.m3u8").append(uri.replaceAll("^/", ""));
-
+                bytes = m3u8_dummy.toString().getBytes(StandardCharsets.UTF_8);
+            } else {
+                c_type = send.headers().firstValue("Content-Type").get();
+                bytes = send.body();
             }
-
-            bytes = m3u8_dummy.toString().getBytes(StandardCharsets.UTF_8);
 
         }
 
         if (httpVersion == null || httpVersion.equals("1.1")) {
-            header.append("HTTP/1.1 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
+            header.append("HTTP/1.1 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: ").append(c_type).append("\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
             bytes = header.toString().getBytes(StandardCharsets.UTF_8);
 
         } else if (httpVersion.equals("2.0")) {
-            header.append("HTTP/2.0 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
+            header.append("HTTP/2.0 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: ").append(c_type).append("\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
             bytes = header.toString().getBytes(StandardCharsets.UTF_8);
         } else {
-            header.append("HTTP/1.0 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: application/vnd.apple.mpegurl\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
+            header.append("HTTP/1.0 200 OK\r\nContent-Length: ").append(bytes.length).append("\r\nContent-Type: ").append(c_type).append("\r\nDate: ").append(new Date()).append("\r\n\r\n").append(m3u8_dummy);
             bytes = header.toString().getBytes(StandardCharsets.UTF_8);
         }
 
