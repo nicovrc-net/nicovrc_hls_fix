@@ -152,7 +152,7 @@ public class HTTPServer extends Thread {
             HttpResponse<byte[]> send = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
 
             if (send.headers().firstValue("Content-Type").isPresent() && send.headers().firstValue("Content-Type").get().equals("application/vnd.apple.mpegurl")){
-                String m3u8 = new String(send.body()., StandardCharsets.UTF_8);
+                String m3u8 = new String(send.body(), StandardCharsets.UTF_8);
                 c_type = send.headers().firstValue("Content-Type").get();
                 for (String str : m3u8.split("\n")){
 
