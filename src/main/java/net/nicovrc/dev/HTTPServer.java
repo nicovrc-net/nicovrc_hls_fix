@@ -157,7 +157,9 @@ public class HTTPServer extends Thread {
                 for (String str : m3u8.split("\n")){
 
                     if (!str.startsWith("/dummy.m3u8?url=")){
-                        m3u8_dummy.append(str).append("\n");
+                        if (str.startsWith("#EXTM3U") || str.startsWith("#EXT-X-VERSION:6")){
+                            m3u8_dummy.append(str).append("\n");
+                        }
                         continue;
                     }
 
