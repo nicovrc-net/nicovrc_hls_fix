@@ -208,6 +208,7 @@ public class HTTPServer extends Thread {
         process.waitFor();
 
         //System.out.println("debug");
+        System.out.println(new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
         System.out.println(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
 
         String hlsText = null;
