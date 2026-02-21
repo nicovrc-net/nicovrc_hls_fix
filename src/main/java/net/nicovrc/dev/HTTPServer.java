@@ -200,8 +200,10 @@ public class HTTPServer extends Thread {
             file.mkdir();
         }
 
-        System.out.println("/bin/ffmpeg -v quiet -i " + nicovrc_baseurl + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
-        ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i",nicovrc_baseurl + uri,"-c:v","copy","-c:a","copy","-f","hls","-hls_playlist_type","vod","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
+        String url = uri.replaceAll("hls_create\\.m3u8", "");
+
+        //System.out.println("/bin/ffmpeg -v quiet -i " + nicovrc_baseurl + url + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
+        ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i",nicovrc_baseurl + url,"-c:v","copy","-c:a","copy","-f","hls","-hls_playlist_type","vod","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
         Process process = pb.start();
 
         //new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) l = l; } catch (IOException ignored) {} }).start();
