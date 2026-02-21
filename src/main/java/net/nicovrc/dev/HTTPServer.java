@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class HTTPServer extends Thread {
 
-    private final String nicovrc_baseurl = "http://localhost:25252";
+    private final String nicovrc_baseurl = "https://rusk.nicovrc.net";
     private final HashMap<String, byte[]> cacheList = new HashMap<>();
 
     public HTTPServer(){
