@@ -205,15 +205,10 @@ public class HTTPServer extends Thread {
         Process process = pb.start();
 
         //new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) l = l; } catch (IOException ignored) {} }).start();
-        //process.waitFor();
+        process.waitFor();
 
         //System.out.println("debug");
-
-        //System.out.println(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
-
-        while (!new File("/hls/"+s+"/main.m3u8").exists()){
-            Thread.sleep(10L);
-        }
+        System.out.println(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
 
         String hlsText = null;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("/hls/"+s+"/main.m3u8"), StandardCharsets.UTF_8))){
