@@ -200,12 +200,16 @@ public class HTTPServer extends Thread {
             file.mkdir();
         }
 
-        //System.out.println("ffmpeg -i https://yobi.nicovrc.net" + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
+        System.out.println("/bin/ffmpeg -v quiet -i " + nicovrc_baseurl + uri + " -c:v copy -c:a copy -f hls -hls_playlist_type vod -hls_segment_filename /hls/"+s+"/%3d.ts /hls/"+s+"/main.m3u8");
         ProcessBuilder pb = new ProcessBuilder("/bin/ffmpeg", "-v","quiet","-i",nicovrc_baseurl + uri,"-c:v","copy","-c:a","copy","-f","hls","-hls_playlist_type","vod","-hls_segment_filename","/hls/"+s+"/%3d.ts","/hls/"+s+"/main.m3u8");
         Process process = pb.start();
 
         //new Thread(() -> { try (BufferedReader r = new BufferedReader(new InputStreamReader(process.getInputStream()))) { String l; while ((l = r.readLine()) != null) l = l; } catch (IOException ignored) {} }).start();
         process.waitFor();
+
+        while (!new File("/hls/"+s+"/main.m3u8").exists()){
+            Thread.sleep(10L);
+        }
 
         //System.out.println("debug");
         System.out.println(new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
