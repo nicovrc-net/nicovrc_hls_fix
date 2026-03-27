@@ -93,7 +93,7 @@ public class HTTPServer extends Thread {
 
                                 HttpRequest request = HttpRequest.newBuilder()
                                         .uri(new URI(url))
-                                        .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0")
+                                        .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0")
                                         .GET()
                                         .build();
 
