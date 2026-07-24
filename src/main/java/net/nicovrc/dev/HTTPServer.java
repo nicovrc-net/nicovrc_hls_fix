@@ -157,7 +157,7 @@ public class HTTPServer extends Thread {
                 for (String str : m3u8.split("\n")){
 
                     if (!str.startsWith(nicovrc_baseurl+"/video/")){
-                        if (str.startsWith("#EXTM3U") || str.startsWith("#EXT-X-VERSION:6")){
+                        if (str.startsWith("#")){
                             m3u8_dummy.append(str).append("\n");
                         }
                         continue;
