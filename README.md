@@ -1,0 +1,2 @@
+# nicovrc_hls_fix
+resoniteとLinux環境用にそれぞれ合わせたもの
