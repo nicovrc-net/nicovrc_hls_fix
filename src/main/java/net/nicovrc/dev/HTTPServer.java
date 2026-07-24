@@ -75,7 +75,7 @@ public class HTTPServer extends Thread {
 
                                 HttpRequest request = HttpRequest.newBuilder()
                                         .uri(new URI(url))
-                                        .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0")
+                                        .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0")
                                         .GET()
                                         .build();
 
@@ -145,7 +145,7 @@ public class HTTPServer extends Thread {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(nicovrc_baseurl+uri+"?hlsfix"))
-                    .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/149.0 HLSFix/1.0")
+                    .headers("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0 HLSFix/1.0")
                     .GET()
                     .build();
 
@@ -156,7 +156,7 @@ public class HTTPServer extends Thread {
                 c_type = send.headers().firstValue("Content-Type").get();
                 for (String str : m3u8.split("\n")){
 
-                    if (!str.startsWith("/dummy.m3u8?url=")){
+                    if (!str.startsWith(nicovrc_baseurl+"/video/")){
                         if (str.startsWith("#EXTM3U") || str.startsWith("#EXT-X-VERSION:6")){
                             m3u8_dummy.append(str).append("\n");
                         }
@@ -164,6 +164,7 @@ public class HTTPServer extends Thread {
                     }
 
                     m3u8_dummy.append("/hls_create.m3u8").append(uri.replaceAll("^/", ""));
+                    break;
 
                 }
 
