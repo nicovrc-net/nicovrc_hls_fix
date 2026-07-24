@@ -4,14 +4,6 @@ package net.nicovrc.dev;
 // ガターの <icon src="AllIcons.Actions.Execute"/> アイコンをクリックします。
 public class Main {
     public static void main(String[] args) {
-
-        HTTPServer httpServer = new HTTPServer();
-        try {
-            httpServer.start();
-            httpServer.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+        System.out.println("Hello World!");
     }
 }
