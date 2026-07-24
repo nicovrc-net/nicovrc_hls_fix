@@ -1,1 +1,1 @@
-rootProject.name = "NicoLive"
+rootProject.name = "nicovrc_hls_fix"
